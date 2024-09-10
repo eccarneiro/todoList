@@ -13,12 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Task {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  name      String 
-  lastName  String
-  email     String   @unique
-  password  String
+  title     String
+  content   String?
+  progress  Progress @default(ToDo)
+}
+
+enum Progress {
+  ToDo
+  InProgress
+  Done
 }
