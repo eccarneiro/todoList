@@ -1,6 +1,5 @@
 import express from 'express';
-import type { Express } from 'express';
-import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { z } from "zod";
 
 const prisma = new PrismaClient()
@@ -73,7 +72,5 @@ app.patch('/tasks/:id', async (req, res) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "Unexpected error" });
     }
 })
-
 // orderby : procurar na doc
-
 app.listen(port, () => console.log(`Server is running on port ${port}`));
