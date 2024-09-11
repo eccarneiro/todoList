@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client'
-import { z } from "zod";
+import { number, z } from "zod";
 
 const prisma = new PrismaClient()
 const app = express();
@@ -17,7 +17,12 @@ const taskSchemaCreating = z.object({
 const taskSchemaEdit = z.object({
     title: z.string().optional(),
     content: z.string().optional(),
+});
+
+const deleteParamsSchema = z.object({
+    id: z.number(),
 })
+
 
 //listar todas as tarefas
 app.get('/', async (req, res) => {
@@ -27,7 +32,12 @@ app.get('/', async (req, res) => {
 //criando uma tarefa
 app.post('/tasks', async (req, res) => {
     try {
-        const { content, title, progress } = taskSchemaCreating.parse(req.body);
+        const result = taskSchemaCreating.safeParse(req.body);
+        if (!result.success){
+            res.status(400).json(result.error)
+            return
+        }
+        const { title, content, progress} = result.data;
         const task = await prisma.task.create({
             data: {
                 title,
@@ -35,7 +45,6 @@ app.post('/tasks', async (req, res) => {
                 progress: progress || 'ToDo',
             },
         });
-        console.log('Task create ', task);
         res.status(201).json(task);
     } catch (error) {
         res.status(500).json({ error: error instanceof Error ? error.message : "Unexpected error" });
@@ -44,17 +53,27 @@ app.post('/tasks', async (req, res) => {
 //deletando tarefa
 app.delete('/tasks/:id', async (req, res) => {
     try {
-        const deletTask = await prisma.task.delete({
+        const result = deleteParamsSchema.safeParse({
+            id: Number(req.params.id) 
+        })
+        if (!result.success){
+            res.status(400).json(result.error)
+            return
+        }
+        const {id} = result.data 
+        console.log(typeof req.params.id)
+        const deleteTask = await prisma.task.delete({
             where: {
-                id: +req.params.id,
+                id,
             }
         });
-        return res.json(deletTask)
+        return res.json(deleteTask)
     } catch (error) {
         res.status(500).json({ error: error instanceof Error ? error.message : "Unexpected error" });
     }
+    
 })
-
+//editar as tasks
 app.patch('/tasks/:id', async (req, res) => {
     try {
         const {content, title} = taskSchemaEdit.parse(req.body);
