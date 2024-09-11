@@ -1,11 +1,13 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client'
-import { number, z } from "zod";
+import { z } from "zod";
+import cors from "cors";
 
 const prisma = new PrismaClient()
 const app = express();
 const port = 3000;
 
+app.use(cors())
 app.use(express.json());
 
 const taskSchemaCreating = z.object({
@@ -17,6 +19,7 @@ const taskSchemaCreating = z.object({
 const taskSchemaEdit = z.object({
     title: z.string().optional(),
     content: z.string().optional(),
+    progress: z.enum(['ToDo', 'InProgress', 'Done']).optional(),
 });
 
 const deleteParamsSchema = z.object({
@@ -25,7 +28,7 @@ const deleteParamsSchema = z.object({
 
 
 //listar todas as tarefas
-app.get('/', async (req, res) => {
+app.get('/tasks', async (req, res) => {
     const tasks = await prisma.task.findMany();
     res.json(tasks);
 });
@@ -33,11 +36,11 @@ app.get('/', async (req, res) => {
 app.post('/tasks', async (req, res) => {
     try {
         const result = taskSchemaCreating.safeParse(req.body);
-        if (!result.success){
+        if (!result.success) {
             res.status(400).json(result.error)
             return
         }
-        const { title, content, progress} = result.data;
+        const { title, content, progress } = result.data;
         const task = await prisma.task.create({
             data: {
                 title,
@@ -54,37 +57,53 @@ app.post('/tasks', async (req, res) => {
 app.delete('/tasks/:id', async (req, res) => {
     try {
         const result = deleteParamsSchema.safeParse({
-            id: Number(req.params.id) 
+            id: Number(req.params.id)
         })
-        if (!result.success){
+        if (!result.success) {
             res.status(400).json(result.error)
             return
         }
-        const {id} = result.data 
-        console.log(typeof req.params.id)
-        const deleteTask = await prisma.task.delete({
-            where: {
-                id,
+        const { id } = result.data
+        try {
+            const deleteTask = await prisma.task.delete({
+                where: {
+                    id,
+                }
+            });
+            return res.json(deleteTask)
+        } catch (error) {
+            if(error.code === "P2025"){
+                res.status(404).json({error:"not found"});
+            }else{
+                throw error;
             }
-        });
-        return res.json(deleteTask)
+        }
     } catch (error) {
         res.status(500).json({ error: error instanceof Error ? error.message : "Unexpected error" });
     }
-    
 })
 //editar as tasks
 app.patch('/tasks/:id', async (req, res) => {
     try {
-        const {content, title} = taskSchemaEdit.parse(req.body);
+        const result = deleteParamsSchema.safeParse({
+            id: Number(req.params.id)
+        })
+        if (!result.success) {
+            res.status(400).json(result.error)
+            return
+        }
+        const { id } = result.data
+
+        const bodyResult = taskSchemaEdit.safeParse(req.body)
+        if (!bodyResult.success) {
+            res.status(400).json(bodyResult.error)
+            return
+        }
         const updateTask = await prisma.task.update({
             where: {
-                id: +req.params.id,
-              },
-              data: {
-                content,
-                title,
-              },
+                id,
+            },
+            data: bodyResult.data
         })
         return res.json(updateTask);
     } catch (error) {
