@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import TodoItem from './components/TodoItem';
+import TodoForm from './components/TodoForm';
 
 interface Todo {
   id: number;
@@ -7,12 +8,11 @@ interface Todo {
   content: string;
 }
 
-function App() {
-  const [todos, setTodos] = useState<Todo[]>([]); // Gerenciar o estado do 'todos' e 'setTodos'
-  const [newTitle, setNewTitle] = useState(''); // Estado para o título da nova tarefa
-  const [newContent, setNewContent] = useState(''); // Estado para o conteúdo da nova tarefa
+const App: React.FC = () => {
 
-  // Função para listar tarefas
+  const [todos, setTodos] = useState<Todo[]>([]); // Gerenciar o estado do 'todos' e 'setTodos'
+
+
   const handleClick = async () => {
     try {
       const res = await fetch("http://localhost:3000/tasks");
@@ -26,9 +26,9 @@ function App() {
     }
   };
 
-  // Função para adicionar nova tarefa
-  const addTodo = async () => {
-    if (newTitle && newContent) {
+
+  const addTodo = async (title: string, content: string) => {
+    if (title && content) {
       try {
         const response = await fetch('http://localhost:3000/tasks', {
           method: 'POST',
@@ -36,8 +36,8 @@ function App() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            title: newTitle,
-            content: newContent,
+            title,
+            content
           }),
         });
 
@@ -47,13 +47,27 @@ function App() {
 
         const newTodo: Todo = await response.json();
         setTodos([...todos, newTodo]); // Adiciona a nova tarefa ao estado
-        setNewTitle(''); // Limpa o campo de título
-        setNewContent(''); // Limpa o campo de conteúdo
       } catch (error) {
         console.error('Failed to add task:', error);
       }
     } else {
       alert('Por favor, preencha ambos os campos.');
+    }
+  };
+
+
+  const deleteTodo = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:3000/tasks/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      setTodos(todos.filter(todo => todo.id !== id));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
     }
   };
 
@@ -67,36 +81,15 @@ function App() {
           Listar Tarefas
         </button>
 
-        {/* Formulário para adicionar nova tarefa */}
-        <form className='mb-4'>
-          <input
-            type="text"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Título da Tarefa"
-            className='border p-2 mb-2 w-full'
-          />
-          <textarea
-            value={newContent}
-            onChange={(e) => setNewContent(e.target.value)}
-            placeholder="Conteúdo da Tarefa"
-            className='border p-2 mb-2 w-full'
-            rows={4} // Define uma altura mínima para o textarea
-          />
-          <button
-            onClick={addTodo}
-            className='w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600'
-          >
-            Adicionar Tarefa
-          </button>
-        </form>
+        <TodoForm addTodo={addTodo} />
 
-        {/* Lista de tarefas */}
         {todos.map(todo => (
           <TodoItem
             key={todo.id}
+            id={todo.id}
             title={todo.title}
             content={todo.content}
+            deleteTodo={deleteTodo}
           />
         ))}
       </div>
