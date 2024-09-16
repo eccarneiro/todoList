@@ -45,7 +45,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, deleteTodo, editTodo }) => {
             Salvar
           </button>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={() => setIsEditing(false)}
             className="ml-2 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded-md shadow-md transition duration-300"
           >
             Cancelar

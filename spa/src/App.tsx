@@ -59,7 +59,6 @@ const App: React.FC = () => {
   
       const updatedTodo: Todo = await response.json();
       
-      // Atualiza o estado para refletir a tarefa editada
       setTodos(todos.map(todo => (todo.id === id ? updatedTodo : todo)));
     } catch (error) {
       console.error('Erro ao editar tarefa:', error);
