@@ -110,5 +110,25 @@ app.patch('/tasks/:id', async (req, res) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "Unexpected error" });
     }
 })
+
+app.get('/tasks/:id', async (req, res) => {
+    try {
+        const  id  = req.params.id
+
+        const bodyResult = taskSchemaEdit.safeParse(req.body)
+        if (!bodyResult.success) {
+            res.status(400).json(bodyResult.error)
+            return
+        }
+        const todo = await prisma.task.findFirst({
+            where: {
+                id: Number(id)
+            },
+        })
+        return res.json(todo);
+    } catch (error) {
+        res.status(500).json({ error: error instanceof Error ? error.message : "Unexpected error" });
+    }
+})
 // orderby : procurar na doc
 app.listen(port, () => console.log(`Server is running on port ${port}`));
