@@ -1,5 +1,3 @@
-// src/pages/Home.tsx
-
 import React, { useState, useEffect } from 'react';
 import TodoForm from '../components/TodoForm';
 import { Link } from 'wouter';

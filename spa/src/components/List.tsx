@@ -45,11 +45,11 @@ const List: React.FC = () => {
                 <p className="text-white">{todo.content}</p>
                 <div className="mt-4 flex justify-between">
                   <Link href={`/edit/${todo.id}`}>
-                    <a className="bg-cyan-500 hover:bg-cyan-600 text-white py-1 px-3 rounded">Editar</a>
+                    <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-10 rounded">Editar</button>
                   </Link>
                   <button
                     onClick={() => handleDelete(todo.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-10 rounded"
                   >
                     Apagar
                   </button>

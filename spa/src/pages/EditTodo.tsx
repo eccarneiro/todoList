@@ -12,8 +12,7 @@ const Edit: React.FC = () => {
   const [todo, setTodo] = useState<Todo | null>(null);
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
-  const [location, setLocation] = useLocation(); // useLocation para navegação
-
+  const [, setLocation] = useLocation(); 
   const params = useParams<{ id: string }>();
 
   useEffect(() => {
@@ -47,14 +46,14 @@ const Edit: React.FC = () => {
       }
 
       await response.json();
-      setLocation('/list'); // Redireciona para a página de listagem
+      setLocation('/list'); 
     } catch (error) {
       console.error('Erro ao salvar tarefa:', error);
     }
   };
 
   const handleCancel = () => {
-    setLocation('/list'); // Redireciona para a página de listagem
+    setLocation('/list'); 
   };
 
   return (

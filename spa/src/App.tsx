@@ -1,5 +1,4 @@
-// src/App.tsx
-
+// Componente principal.
 import React from 'react';
 import { Route, Switch } from 'wouter';
 import Home from './pages/Home';
